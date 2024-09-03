@@ -19,10 +19,10 @@ const GanttChart: React.FC<GanttChartProps> = ({ initTasks }) => {
     setTasks(toggleExpandTask(task));
   };
 
-  const handleTaskChange = (task: Task) => {
-    console.log(`Task updated: ${task.name}`);
-    // Implement any additional logic for handling task changes if needed
-  };
+  // const handleTaskChange = (task: Task) => {
+  //   console.log(`Task updated: ${task.name}`);
+  //   // Implement any additional logic for handling task changes if needed
+  // };
 
   return (
     <div>
@@ -31,7 +31,7 @@ const GanttChart: React.FC<GanttChartProps> = ({ initTasks }) => {
         viewMode={ViewMode.HalfDay}
         todayColor="#FF7276"
         listCellWidth="300px"
-        onDateChange={handleTaskChange}
+        // onDateChange={handleTaskChange}
         TaskListHeader={(props) => <TaskListHeaderDefault {...props} />}
         TaskListTable={(props) => (
           <TaskListTableDefault
