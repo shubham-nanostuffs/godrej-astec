@@ -1,5 +1,34 @@
 import { Task } from "gantt-task-react";
 
+// Function to get the start and end dates for a project from records
+export const getStartEndDateForProject = (records: any[], projectId: string) => {
+  const projectRecords = records.filter((r) => {
+    const stageName = r.Stage_Gates__r?.Stage_Gate_Activities_Template__r?.Name;
+    return stageMapping[stageName || "Unknown"] === projectId;
+  });
+
+  if (projectRecords.length === 0) {
+    return [null, null];
+  }
+
+  let start = new Date(projectRecords[0].Start_Date__c);
+  let end = new Date(projectRecords[0].ActivityDate);
+
+  for (let i = 1; i < projectRecords.length; i++) {
+    const record = projectRecords[i];
+    const recordStart = new Date(record.Start_Date__c);
+    const recordEnd = new Date(record.ActivityDate);
+
+    if (start.getTime() > recordStart.getTime()) {
+      start = recordStart;
+    }
+    if (end.getTime() < recordEnd.getTime()) {
+      end = recordEnd;
+    }
+  }
+  return [start, end];
+};
+
 const stageMapping: Record<string, string> = {
   "A0-G1": "1",
   "A1-G2": "2",
@@ -10,13 +39,16 @@ const stageMapping: Record<string, string> = {
 };
 
 // Helper function to format dates
-const formatDate = (date: Date): string => {
-  return date.toISOString().split("T")[0];
+const formatDate = (date: Date | null | undefined): string => {
+  return date ? date.toISOString().split("T")[0] : "N/A";
 };
 
 // Function to format Salesforce data into Gantt chart format
 export const formatTasksForGantt = (records: any[]): Record<string, Task[]> => {
   const stages: Record<string, Task[]> = {};
+
+  // Organize tasks by stageId
+  const tasksByStage: Record<string, Task[]> = {};
 
   records.forEach((record) => {
     const stageName =
@@ -25,21 +57,20 @@ export const formatTasksForGantt = (records: any[]): Record<string, Task[]> => {
 
     if (!stageId) return;
 
-    if (!stages[stageId]) {
-      stages[stageId] = [];
+    if (!tasksByStage[stageId]) {
+      tasksByStage[stageId] = [];
     }
 
-    const start = new Date(record.Start_Date__c);
-    
-    const end = new Date(record.ActivityDate);
+    // Check for null or undefined dates
+    const start = record.Start_Date__c ? new Date(record.Start_Date__c) : null;
+    const end = record.ActivityDate ? new Date(record.ActivityDate) : null;
 
-    // Log formatted dates
-    console.log("Formatted Start Date:", formatDate(start));
-    console.log("Formatted End Date:", formatDate(end));
+    // If both start and end dates are null, skip the record
+    if (!start || !end) return;
 
-    stages[stageId].push({
-      start: start,
-      end: end,
+    tasksByStage[stageId].push({
+      start,
+      end,
       name: record.Subject,
       id: record.Id,
       type: "task",
@@ -48,6 +79,21 @@ export const formatTasksForGantt = (records: any[]): Record<string, Task[]> => {
       dependencies: [],
     });
   });
+
+  // Determine the start and end dates for each stage
+  Object.keys(tasksByStage).forEach((stageId) => {
+    const stageTasks = tasksByStage[stageId];
+    const [stageStart, stageEnd] = getStartEndDateForProject(records, stageId);
+
+    // Update tasks with the correct start and end dates for the stage
+    stages[stageId] = stageTasks.map(task => ({
+      ...task,
+      start: stageStart, // Assign the Date object directly
+      end: stageEnd,     // Assign the Date object directly
+    }));
+  });
+
+  console.log(stages);
 
   return stages;
 };

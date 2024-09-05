@@ -11,7 +11,9 @@ export interface SalesforceProjectDataResponse {
 export const fetchSalesforceProjectData = async (
   accessToken: string
 ): Promise<SalesforceProjectDataResponse> => {
-  const url = `https://velocity-innovation-7343--developer.sandbox.my.salesforce.com/services/data/v53.0/query/?q=select+id%2CName+from+New_Project_Process__c`;
+  const url = `https://${
+    import.meta.env.VITE_SALESFORCE_DOMAIN
+  }/services/data/v53.0/query/?q=select+id%2CName+from+New_Project_Process__c`;
 
   try {
     const response: AxiosResponse<SalesforceProjectDataResponse> =

@@ -3,6 +3,10 @@ import React, { useEffect, useState } from "react";
 import { fetchAuthToken } from "./services/api";
 import { HomeComponent } from "./components/HomeComponent";
 import { fetchSalesforceProjectData } from "./services/salesforceProjectApi";
+interface MenuItem {
+  label: string;
+  key: string;
+}
 
 const App: React.FC = () => {
   const [projects, setProjects] = useState<MenuItem[]>([]);
