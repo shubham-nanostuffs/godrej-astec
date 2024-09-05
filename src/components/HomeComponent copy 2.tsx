@@ -2,20 +2,20 @@ import { useEffect, useState } from "react";
 import CommonDropdown from "./Dropdown";
 import styles from "./styles.module.css";
 import GanttChart from "./GanttChart";
+import { initTasks } from "./Tasks";
+import { Task } from "gantt-task-react";
 import { fetchSalesforceTaskData } from "../services/salesforceTaskApi";
 import { formatTasksForGantt } from "../utils/formatTasks";
-import { Task } from "gantt-task-react";
+import { EnhancedTask } from "./EnhancedTask";
 
 interface MenuItem {
   label: string;
   key: string;
 }
-
 interface HomeComponentProps {
   projects: MenuItem[];
   accessToken: string;
 }
-
 export const HomeComponent: React.FC<HomeComponentProps> = ({
   projects,
   accessToken,
@@ -23,12 +23,13 @@ export const HomeComponent: React.FC<HomeComponentProps> = ({
   const [selectedProject, setSelectedProject] = useState<string>("1");
   const [selectedProjectLabel, setSelectedProjectLabel] =
     useState<string>("Select Project");
-
-  // Corrected: Initialize tasks as an empty object of type Record<string, Task[]>
-  const [tasks, setTasks] = useState<Record<string, Task[]>>({});
-
+  const [tasks, setTasks] = useState<Task[]>(initTasks[selectedProject]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const items: MenuItem[] = [
+    { label: "Project 1", key: "1" },
+    { label: "Project 2", key: "2" },
+  ];
 
   useEffect(() => {
     const loadTasks = async () => {
@@ -36,23 +37,17 @@ export const HomeComponent: React.FC<HomeComponentProps> = ({
 
       setLoading(true);
       try {
-        console.log("Selected Project:", selectedProject);
-        console.log("Access Token:", accessToken);
+        console.log(selectedProject);
+        console.log("Access Token", accessToken);
 
         const taskData = await fetchSalesforceTaskData(
           accessToken,
           selectedProject
         );
-
-        console.log("Task Data:", taskData.records);
-        if (taskData.records) {
-          console.log("Undefined task data");
-        }
-
         const formattedTasks = formatTasksForGantt(taskData.records);
-        console.log("Formatted Tasks:", formattedTasks);
+        console.log("Formatted Task : ", projects);
 
-        setTasks(formattedTasks); // Correct: Set the formatted tasks directly
+        setTasks(formattedTasks as EnhancedTask[]); // Ensure correct type
       } catch (err) {
         console.error("Failed to fetch tasks:", err);
         setError("Failed to fetch tasks");
@@ -64,12 +59,17 @@ export const HomeComponent: React.FC<HomeComponentProps> = ({
     loadTasks();
   }, [selectedProject, accessToken]);
 
+  // const handleProjectSelect = (key: string) => {
+  //   setSelectedProject(key);
+  //   const selectedItem = items.find((item) => item.key === key);
+  //   if (selectedItem) {
+  //     setSelectedProjectLabel(selectedItem.label);
+  //   }
+  //   setTasks(initTasks[key]);
+  // };
+
   const handleProjectSelect = (key: string) => {
     setSelectedProject(key);
-    const selectedItem = projects.find((item) => item.key === key);
-    if (selectedItem) {
-      setSelectedProjectLabel(selectedItem.label);
-    }
   };
 
   return (
@@ -89,16 +89,9 @@ export const HomeComponent: React.FC<HomeComponentProps> = ({
             width: "100%", // Ensure dropdown button takes full width
           }}
         />
-        {/* <div className="mt-3">
-          {loading ? (
-            <p>Loading...</p>
-          ) : error ? (
-            <p>{error}</p>
-          ) : (
-            // Corrected: Use the selected project to display the tasks
-            <GanttChart initTasks={tasks[selectedProject] || []} />
-          )}
-        </div> */}
+        <div className="mt-3">
+          <GanttChart initTasks={tasks} />
+        </div>
       </div>
     </>
   );

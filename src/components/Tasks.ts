@@ -92,7 +92,6 @@ export const initTasks: Record<string, Task[]> = {
       type: "task",
       progress: 10,
       hideChildren: false,
-   
     },
     {
       start: new Date(2024, 6, 2),
