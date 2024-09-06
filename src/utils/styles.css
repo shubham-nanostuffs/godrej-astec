@@ -1,0 +1,4 @@
+.gantt-task-name {
+  display: none; /* This hides the task name on the bar */
+  background-color: red;
+}

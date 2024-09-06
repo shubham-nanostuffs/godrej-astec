@@ -1,7 +1,6 @@
 import { Task } from "gantt-task-react";
 import { SalesforceTaskDataResponse } from "../services/salesforceTaskApi";
 
-// Define stage order mapping
 const stageMapping: Record<string, number> = {
   "A0-G1": 1,
   "A1-G2": 2,
@@ -11,17 +10,95 @@ const stageMapping: Record<string, number> = {
   "A5-G6": 6,
 };
 
+const parseDate = (
+  dateString: Date | string | null,
+  fallbackDate: Date = new Date()
+): Date => {
+  const date = new Date(dateString ?? "");
+  return isNaN(date.valueOf()) ? fallbackDate : date;
+};
+
+// Refactored function to handle different progress color conditions
+const calculateProgressStyles = (
+  progress: number
+): { progressColor: string; backgroundColor: string } => {
+  if (progress > 100) {
+    return {
+      progressColor: "red", // Entire task is completed, use green
+      backgroundColor: progress > 100 ? "red" : "gray", // Over-progress should be red
+    };
+  } else {
+    return {
+      progressColor: "green", // Progress part is green
+      backgroundColor: "gray", // Remaining part is gray
+    };
+  }
+};
+
+const calculateProgress = (
+  startDate: Date,
+  completedDate: Date,
+  endDate: Date
+): number => {
+  const now = new Date();
+  const taskEnd = endDate.getTime();
+  // const taskCompleted = completedDate.getTime();
+  const taskCompleted = completedDate.getTime();
+
+  const totalDuration = taskEnd - startDate.getTime();
+  const elapsedDuration = taskCompleted - startDate.getTime();
+
+  if (elapsedDuration >= totalDuration) {
+    return elapsedDuration > totalDuration ? 120 : 100; // Over-completed or fully completed
+  }
+
+  const progress = (elapsedDuration / totalDuration) * 100;
+  return progress < 0 ? 0 : progress; // Ensure progress isn't negative
+};
+
+const naturalSort = (a: string, b: string) => {
+  const ax = [];
+  const bx = [];
+
+  a.replace(/(\d+)|(\D+)/g, (_, $1, $2) => {
+    ax.push([$1 || Infinity, $2 || ""]);
+    return "";
+  });
+  b.replace(/(\d+)|(\D+)/g, (_, $1, $2) => {
+    bx.push([$1 || Infinity, $2 || ""]);
+    return "";
+  });
+
+  while (ax.length && bx.length) {
+    const an = ax.shift();
+    const bn = bx.shift();
+    const nn = an[0] - bn[0] || an[1].localeCompare(bn[1]);
+    if (nn) return nn;
+  }
+
+  return ax.length - bx.length;
+};
+
 export const mapSalesforceTasksToGanttTasks = (
   salesforceTasks: SalesforceTaskDataResponse["records"]
 ): Task[] => {
   const tasks: Task[] = [];
   const stageProjects: Record<string, Task> = {};
+  const stageTasks: Record<string, Task[]> = {};
 
   salesforceTasks.forEach((sfTask) => {
     const stageName =
-      sfTask.Stage_Gates__r?.Stage_Gate_Activities_Template__r?.Name;
-    const stageStartDate = sfTask.Stage_Gates__r?.Start_Date__c;
-    const stageEndDate = sfTask.Stage_Gates__r?.End_Date__c;
+      sfTask.Stage_Gates__r?.Stage_Gate_Activities_Template__r?.Name ??
+      "Unknown Stage";
+
+    const assignToName = sfTask.Owner?.Name ?? "Unknown Owner Name";
+    const taskStatus = sfTask.Status ?? "Unknown Task Status";
+
+    const stageStartDate = sfTask.Stage_Gates__r?.Start_Date__c ?? "null";
+    const taskCompletedDate = sfTask.CompletedDateTime ?? "null";
+
+    const parsedStageStartDate = parseDate(stageStartDate, new Date());
+    const parsedTaskCompletedDate = parseDate(taskCompletedDate, new Date());
 
     const stageId =
       stageMapping[stageName] !== undefined ? stageName : "Unknown Stage";
@@ -30,54 +107,75 @@ export const mapSalesforceTasksToGanttTasks = (
       stageProjects[stageId] = {
         id: stageId,
         name: stageId,
-        start: stageStartDate ? new Date(stageStartDate) : new Date(),
-        end: stageEndDate ? new Date(stageEndDate) : new Date(),
-        progress: 0,
+        start: parsedStageStartDate,
+        end: new Date(0),
+        progress: 30,
         type: "project",
-        hideChildren: true, // Initially hide children
+        hideChildren: true,
       };
       tasks.push(stageProjects[stageId]);
+      stageTasks[stageId] = [];
     }
+
+    const taskStartDate = parseDate(sfTask.Start_Date__c, new Date());
+    const taskEndDate = parseDate(sfTask.ActivityDate, new Date());
+
+    const progress = calculateProgress(
+      taskStartDate,
+      parsedTaskCompletedDate,
+      taskEndDate
+    );
+    const { progressColor, backgroundColor } =
+      calculateProgressStyles(progress);
+
+    const duration = Math.round(
+      (taskEndDate.getTime() - taskStartDate.getTime()) / (1000 * 60 * 60 * 24)
+    );
 
     const task: Task = {
-      id: sfTask.Id,
-      name: sfTask.Subject,
-      start: sfTask.Start_Date__c ? new Date(sfTask.Start_Date__c) : new Date(),
-      end: sfTask.ActivityDate ? new Date(sfTask.ActivityDate) : new Date(),
-      progress: Math.random() * 100, // Set progress or define logic
+      id: sfTask.Id ?? "Unknown Task ID",
+      name: sfTask.Subject ?? "Unknown Task",
+      start: taskStartDate,
+      end: taskEndDate,
+      progress: progress,
       type: "task",
-      project: stageId, // Associate task with the stage project
-      dependencies: [], // Add dependencies if available
+      project: stageId,
+      dependencies: [],
+      styles: {
+        progressColor: progress ? progressColor : "red",
+        backgroundColor,
+      },
+      status: taskStatus,
+      duration: duration,
+      assignedToName: assignToName,
+      completedDate: taskCompletedDate,
     };
 
-    tasks.push(task);
+    stageTasks[stageId].push(task);
 
-    // Adjust stage project dates to encompass the task dates
-    if (task.start < stageProjects[stageId].start) {
-      stageProjects[stageId].start = task.start;
-    }
     if (task.end > stageProjects[stageId].end) {
       stageProjects[stageId].end = task.end;
     }
   });
 
-  // Sort tasks by stage start date and end date, then by task dates
-  tasks.sort((a, b) => {
-    if (a.type === "project" && b.type === "project") {
-      if (a.start < b.start) return -1;
-      if (a.start > b.start) return 1;
-      if (a.end < b.end) return -1;
-      if (a.end > b.end) return 1;
-      return (stageMapping[a.name] || 0) - (stageMapping[b.name] || 0);
-    }
-    if (a.type === "task" && b.type === "task") {
-      if (a.start < b.start) return -1;
-      if (a.start > b.start) return 1;
-      if (a.end < b.end) return -1;
-      if (a.end > b.end) return 1;
-    }
-    return 0;
-  });
+  for (const stageId in stageTasks) {
+    stageTasks[stageId].sort((a, b) => {
+      if (a.start.getTime() !== b.start.getTime()) {
+        return a.start.getTime() - b.start.getTime();
+      }
+      return naturalSort(a.name, b.name);
+    });
+  }
 
-  return tasks;
+  const sortedTasks: Task[] = [];
+  for (const stageId of Object.keys(stageMapping)) {
+    if (stageProjects[stageId]) {
+      sortedTasks.push(stageProjects[stageId]);
+    }
+    if (stageTasks[stageId]) {
+      sortedTasks.push(...stageTasks[stageId]);
+    }
+  }
+
+  return sortedTasks;
 };

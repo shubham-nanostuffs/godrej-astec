@@ -4,8 +4,10 @@ import styles from "./styles.module.css";
 import { fetchSalesforceTaskData } from "../services/salesforceTaskApi";
 import { Gantt, Task, ViewMode } from "gantt-task-react";
 import { mapSalesforceTasksToGanttTasks } from "../utils/mapSalesForceTasks";
-import { getStartEndDateForProject } from "./helpers";
 import "gantt-task-react/dist/index.css";
+import { TaskListHeaderDefault } from "./TaskListHeader";
+import { TaskListTableDefault } from "./TaskListTable";
+import CustomTooltip from "./CustomToolTip";
 
 interface MenuItem {
   label: string;
@@ -28,9 +30,9 @@ export const HomeComponent: React.FC<HomeComponentProps> = ({
   const [view, _setView] = useState<ViewMode>(ViewMode.Day);
   const [isChecked, _setIsChecked] = useState(true);
 
-  let columnWidth = 70;
+  let columnWidth = 60;
   if (view === ViewMode.HalfDay) {
-    columnWidth = 60;
+    columnWidth = 300;
   } else if (view === ViewMode.Week) {
     columnWidth = 100;
   }
@@ -73,26 +75,6 @@ export const HomeComponent: React.FC<HomeComponentProps> = ({
   // Handle project selection from the dropdown
   const handleProjectSelect = (key: string) => {
     setSelectedProject(key);
-  };
-
-  const handleTaskChange = (task: Task) => {
-    console.log("On date change Id:" + task.id);
-    let newTasks = tasks.map((t) => (t.id === task.id ? task : t));
-    if (task.project) {
-      const [start, end] = getStartEndDateForProject(newTasks, task.project);
-      const project =
-        newTasks[newTasks.findIndex((t) => t.id === task.project)];
-      if (
-        project.start.getTime() !== start.getTime() ||
-        project.end.getTime() !== end.getTime()
-      ) {
-        const changedProject = { ...project, start, end };
-        newTasks = newTasks.map((t) =>
-          t.id === task.project ? changedProject : t
-        );
-      }
-    }
-    setTasks(newTasks);
   };
 
   const handleDblClick = (task: Task) => {
@@ -140,12 +122,12 @@ export const HomeComponent: React.FC<HomeComponentProps> = ({
       {loading ? (
         <div>Loading tasks...</div>
       ) : (
-        <div className="mt-3">
+        <div className="mt-3 border-2">
           {/* Render the stages with tasks */}
           {Object.keys(tasksByStage).map((stageId) => (
             <div key={stageId}>
               {/* Stage Header */}
-              <h4>{`Stage ${stageId}`}</h4>
+              {/* <h4>{`Stage ${stageId}`}</h4> */}
 
               {/* Render the Gantt chart for tasks under the stage */}
               <Gantt
@@ -154,7 +136,10 @@ export const HomeComponent: React.FC<HomeComponentProps> = ({
                 // onDateChange={handleTaskChange}
                 // onDelete={handleTaskDelete}
                 // onProgressChange={handleProgressChange}
+                TooltipContent={CustomTooltip} // Use the custom tooltip component
                 onDoubleClick={handleDblClick}
+                TaskListHeader={(props) => <TaskListHeaderDefault {...props} />}
+                TaskListTable={(props) => <TaskListTableDefault {...props} />}
                 // onSelect={handleSelect}
                 onExpanderClick={handleExpanderClick}
                 listCellWidth={isChecked ? "155px" : ""}
@@ -162,6 +147,7 @@ export const HomeComponent: React.FC<HomeComponentProps> = ({
               />
             </div>
           ))}
+          
         </div>
       )}
     </div>
