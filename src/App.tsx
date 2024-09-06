@@ -46,8 +46,7 @@ const App: React.FC = () => {
   if (error) return <p>Error: {error}</p>;
 
   return (
-    <div className="App">
-      <h1>Salesforce Data</h1>
+    <div className="App w-full px-2">
       {projects.length > 0 && accessToken ? (
         <HomeComponent projects={projects} accessToken={accessToken} />
       ) : (

@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import CommonDropdown from "./Dropdown";
 import styles from "./styles.module.css";
 import { fetchSalesforceTaskData } from "../services/salesforceTaskApi";
 import { Gantt, Task, ViewMode } from "gantt-task-react";
@@ -8,6 +7,7 @@ import "gantt-task-react/dist/index.css";
 import { TaskListHeaderDefault } from "./TaskListHeader";
 import { TaskListTableDefault } from "./TaskListTable";
 import CustomTooltip from "./CustomToolTip";
+import CommonDropdown from "./Dropdown";
 
 interface MenuItem {
   label: string;
@@ -27,12 +27,12 @@ export const HomeComponent: React.FC<HomeComponentProps> = ({
   const [tasks, setTasks] = useState<Task[]>([]); // Initially empty array for tasks
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [view, _setView] = useState<ViewMode>(ViewMode.Day);
+  const [view, setView] = useState<ViewMode>(ViewMode.HalfDay);
   const [isChecked, _setIsChecked] = useState(true);
 
-  let columnWidth = 60;
+  let columnWidth = 70;
   if (view === ViewMode.HalfDay) {
-    columnWidth = 300;
+    columnWidth = 60;
   } else if (view === ViewMode.Week) {
     columnWidth = 100;
   }
@@ -67,8 +67,6 @@ export const HomeComponent: React.FC<HomeComponentProps> = ({
 
   // Effect to load tasks when the selected project changes
   useEffect(() => {
-    console.log("Here is data changes", selectedProject);
-
     loadTasks(selectedProject);
   }, [selectedProject, accessToken]);
 
@@ -94,10 +92,8 @@ export const HomeComponent: React.FC<HomeComponentProps> = ({
   }, {} as Record<string, Task[]>);
 
   return (
-    <div>
-      <p>Interactive Gantt Chart</p>
+    <div className="h-full overflow-hidden">
       <p className="font-bold">Select Project</p>
-
       {/* Project selection dropdown */}
       <CommonDropdown
         label={
@@ -125,29 +121,22 @@ export const HomeComponent: React.FC<HomeComponentProps> = ({
         <div className="mt-3 border-2">
           {/* Render the stages with tasks */}
           {Object.keys(tasksByStage).map((stageId) => (
-            <div key={stageId}>
-              {/* Stage Header */}
-              {/* <h4>{`Stage ${stageId}`}</h4> */}
-
+            <div key={stageId} className="w-full overflow-hidden ">
               {/* Render the Gantt chart for tasks under the stage */}
               <Gantt
                 tasks={tasksByStage[stageId]}
                 viewMode={view}
-                // onDateChange={handleTaskChange}
-                // onDelete={handleTaskDelete}
-                // onProgressChange={handleProgressChange}
                 TooltipContent={CustomTooltip} // Use the custom tooltip component
                 onDoubleClick={handleDblClick}
                 TaskListHeader={(props) => <TaskListHeaderDefault {...props} />}
                 TaskListTable={(props) => <TaskListTableDefault {...props} />}
-                // onSelect={handleSelect}
                 onExpanderClick={handleExpanderClick}
                 listCellWidth={isChecked ? "155px" : ""}
                 columnWidth={columnWidth}
+                ganttHeight={540}
               />
             </div>
           ))}
-          
         </div>
       )}
     </div>

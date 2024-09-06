@@ -1,7 +1,7 @@
 .taskListWrapper {
   display: table;
-  border-bottom: #e6e4e4 1px solid;
-  border-left: #e6e4e4 1px solid;
+  /* border-bottom: #e6e4e4 1px solid;
+      border-left: #e6e4e4 1px solid; */
   width: 100%;
   margin-top: 0.5px;
 }
@@ -21,16 +21,19 @@
   display: table-cell;
   vertical-align: middle;
   white-space: nowrap;
-  overflow: auto;
-  text-overflow: ellipsis;
+  /* overflow: auto; */
+  /* text-overflow: ellipsis; */
   width: 100%;
   border: 1px solid #e6e4e4;
 }
 .taskListNameWrapper {
   display: flex;
 }
+.taskListExpander  ._taskListWrapper_xvy65_1 {
+  background-color: red;
+}
 
-.taskListExpander {
+.taskListExpander  {
   color: rgb(86 86 86);
   font-size: 0.6rem;
   padding: 0.15rem 0.2rem 0rem 0.2rem;
@@ -38,6 +41,7 @@
   cursor: pointer;
   margin-right: 5px;
   margin-left: 10;
+  
 }
 .taskListEmptyExpander {
   font-size: 0.6rem;

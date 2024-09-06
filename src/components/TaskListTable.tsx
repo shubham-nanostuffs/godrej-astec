@@ -51,7 +51,7 @@ export const TaskListTableDefault: React.FC<{
       style={{
         fontFamily: fontFamily,
         fontSize: fontSize,
-        border: "2px"  
+        border: "2px",
       }}
     >
       {tasks.map((t) => {
@@ -69,8 +69,9 @@ export const TaskListTableDefault: React.FC<{
         return (
           <div
             className={styles.taskListTableRow}
-            style={{ height: rowHeight }}
+            style={{ height: rowHeight,  }}
             key={`${t.id}row`}
+
           >
             <div
               className={styles.taskListCell}
