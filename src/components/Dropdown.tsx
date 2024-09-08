@@ -1,5 +1,4 @@
 import { useState } from "react";
-import styles from "./styles.module.css";
 
 interface CommonDropdownProps {
   label: string;
@@ -25,45 +24,58 @@ const CommonDropdown: React.FC<CommonDropdownProps> = ({
   );
 
   return (
-    <div className={styles.dropdownContainer}>
+    <div className="inline-block text-left">
       {/* Dropdown button */}
       <button
-        className={buttonClass}
+        className={`${buttonClass} inline-flex justify-between items-center w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none`}
         style={buttonStyle}
         onClick={() => setIsOpen((prev) => !prev)}
       >
         {label}
+        <svg
+          className={`w-5 h-5 ml-2 transition-transform duration-200 transform ${isOpen ? "rotate-180" : "rotate-0"}`}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
       </button>
 
       {/* Dropdown menu */}
       {isOpen && (
-        <div className={styles.dropdownMenu}>
+        <div className="relative right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
           {/* Search input */}
-          <input
-            type="text"
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
-            placeholder="Search..."
-            className={styles.dropdownSearch}
-          />
+          <div className="px-3 py-2">
+            <input
+              type="text"
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              placeholder="Search..."
+              className="w-full px-3 py-2 border border-gray-300 rounded-md"
+            />
+          </div>
 
           {/* Dropdown items */}
-          {filteredItems.length > 0 ? (
-            filteredItems.map((item) => (
-              <div
-                key={item.key}
-                className={styles.dropdownItem}
-                onClick={() => {
-                  onClick(item);
-                  setIsOpen(false); // Close the dropdown after selection
-                }}
-              >
-                {item.label}
-              </div>
-            ))
-          ) : (
-            <div className={styles.dropdownItem}>No results found</div>
-          )}
+          <div className="py-1 overflow-y-scroll h-screen">
+            {filteredItems.length > 0 ? (
+              filteredItems.map((item) => (
+                <div
+                  key={item.key}
+                  className="px-4 py-2 text-sm text-gray-700 cursor-pointer hover:bg-gray-100"
+                  onClick={() => {
+                    onClick(item);
+                    setIsOpen(false); // Close the dropdown after selection
+                  }}
+                >
+                  {item.label}
+                </div>
+              ))
+            ) : (
+              <div className="px-4 py-2 text-sm text-gray-700">No results found</div>
+            )}
+          </div>
         </div>
       )}
     </div>

@@ -13,12 +13,14 @@ export const TaskListHeaderDefault: React.FC<{
       style={{
         fontFamily: fontFamily,
         fontSize: fontSize,
+     
       }}
     >
       <div
         className={styles.ganttTable_Header}
         style={{
           height: headerHeight - 2,
+          
         }}
       >
         <div

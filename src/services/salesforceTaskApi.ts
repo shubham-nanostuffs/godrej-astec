@@ -56,8 +56,6 @@ export const fetchSalesforceTaskData = async (
       );
     });
 
-    console.log("Filtered tasks response", filteredRecords);
-
     return { ...response.data, records: filteredRecords };
   } catch (error) {
     console.error("Error fetching task data:", error);

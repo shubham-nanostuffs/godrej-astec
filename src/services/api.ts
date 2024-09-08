@@ -15,8 +15,6 @@ export const fetchAuthToken = async (): Promise<AuthTokenResponse> => {
     import.meta.env.VITE_SALESFORCE_DOMAIN
   }/services/oauth2/token`;
 
-  console.log("Here is url", url);
-
   const params = new URLSearchParams();
   params.append("grant_type", "password");
   params.append(
