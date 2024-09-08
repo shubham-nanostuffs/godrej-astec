@@ -7,7 +7,11 @@ import { TaskListHeaderDefault } from "./TaskListHeader";
 import { TaskListTableDefault } from "./TaskListTable";
 import CustomTooltip from "./CustomToolTip";
 import CommonDropdown from "./Dropdown";
+import { Task as GanttTask } from "gantt-task-react";
 
+interface CustomTask extends GanttTask {
+  stage?: string; // Add stage property to the task
+}
 interface MenuItem {
   label: string;
   key: string;
@@ -26,7 +30,7 @@ export const HomeComponent: React.FC<HomeComponentProps> = ({
   const [tasks, setTasks] = useState<Task[]>([]); // Initially empty array for tasks
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [view, setView] = useState<ViewMode>(ViewMode.HalfDay);
+  const [view, _setView] = useState<ViewMode>(ViewMode.HalfDay);
   const [isChecked, _setIsChecked] = useState(true);
 
   let columnWidth = 70;
@@ -80,10 +84,11 @@ export const HomeComponent: React.FC<HomeComponentProps> = ({
 
   // Group tasks by stage
   const tasksByStage = tasks.reduce((acc, task) => {
-    if (!acc[task.stage]) acc[task.stage] = [];
-    acc[task.stage].push(task);
+    const stage = task.stage || "Unknown Stage";
+    if (!acc[stage]) acc[stage] = [];
+    acc[stage].push(task);
     return acc;
-  }, {} as Record<string, Task[]>);
+  }, {} as Record<string, CustomTask[]>);
 
   return (
     <div className="h-full">
@@ -129,7 +134,7 @@ export const HomeComponent: React.FC<HomeComponentProps> = ({
                 onExpanderClick={handleExpanderClick}
                 listCellWidth={isChecked ? "155px" : ""}
                 columnWidth={columnWidth}
-                ganttHeight={400}
+                ganttHeight={500}
               />
             </div>
           ))}

@@ -1,4 +1,3 @@
-// src/App.tsx
 import React, { useEffect, useState } from "react";
 import { fetchAuthToken } from "./services/api";
 import { HomeComponent } from "./components/HomeComponent";

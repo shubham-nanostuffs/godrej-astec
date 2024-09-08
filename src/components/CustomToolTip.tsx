@@ -1,8 +1,15 @@
 import React from "react";
-import { Task } from "gantt-task-react";
+import { Task as GanttTask } from "gantt-task-react";
+
+interface ExtendedTask extends GanttTask {
+  status: string;
+  duration: number;
+  assignedToName: string;
+  completedDate?: Date;
+}
 
 interface CustomTooltipProps {
-  task: Task;
+  task: ExtendedTask;
 }
 
 const CustomTooltip: React.FC<CustomTooltipProps> = ({ task }) => {
@@ -63,9 +70,9 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({ task }) => {
           <div>
             <strong>End Date:</strong> {formatDate(new Date(end))}
           </div>
-          {status === "Completed" && (
+          {status === "Completed" && completedDate && (
             <div>
-              <strong>Completed Date:</strong>{" "}
+              <strong>Completed Date:</strong>
               {formatDate(new Date(completedDate))}
             </div>
           )}

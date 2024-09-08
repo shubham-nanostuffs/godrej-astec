@@ -1,5 +1,10 @@
 import { Task } from "gantt-task-react";
 import { SalesforceTaskDataResponse } from "../services/salesforceTaskApi";
+import { Task as GanttTask } from "gantt-task-react";
+
+interface CustomTask extends GanttTask {
+  stage?: string; // Add stage property to the task
+}
 
 const stageMapping: Record<string, number> = {
   "A0-G1": 1,
@@ -24,8 +29,8 @@ const calculateProgressStyles = (
 ): { progressColor: string; backgroundColor: string } => {
   if (progress > 100) {
     return {
-      progressColor: "red", // Entire task is completed, use green
-      backgroundColor: progress > 100 ? "red" : "gray", // Over-progress should be red
+      progressColor: "red", // Over-progress should be red
+      backgroundColor: "red", // Over-progress should be red
     };
   } else {
     return {
@@ -40,9 +45,7 @@ const calculateProgress = (
   completedDate: Date,
   endDate: Date
 ): number => {
-  const now = new Date();
   const taskEnd = endDate.getTime();
-  // const taskCompleted = completedDate.getTime();
   const taskCompleted = completedDate.getTime();
 
   const totalDuration = taskEnd - startDate.getTime();
@@ -57,21 +60,21 @@ const calculateProgress = (
 };
 
 const naturalSort = (a: string, b: string) => {
-  const ax = [];
-  const bx = [];
+  const ax: [number, string][] = [];
+  const bx: [number, string][] = [];
 
   a.replace(/(\d+)|(\D+)/g, (_, $1, $2) => {
-    ax.push([$1 || Infinity, $2 || ""]);
+    ax.push([$1 ? parseInt($1, 10) : Infinity, $2 || ""]);
     return "";
   });
   b.replace(/(\d+)|(\D+)/g, (_, $1, $2) => {
-    bx.push([$1 || Infinity, $2 || ""]);
+    bx.push([$1 ? parseInt($1, 10) : Infinity, $2 || ""]);
     return "";
   });
 
   while (ax.length && bx.length) {
-    const an = ax.shift();
-    const bn = bx.shift();
+    const an = ax.shift()!;
+    const bn = bx.shift()!;
     const nn = an[0] - bn[0] || an[1].localeCompare(bn[1]);
     if (nn) return nn;
   }
@@ -81,10 +84,10 @@ const naturalSort = (a: string, b: string) => {
 
 export const mapSalesforceTasksToGanttTasks = (
   salesforceTasks: SalesforceTaskDataResponse["records"]
-): Task[] => {
-  const tasks: Task[] = [];
-  const stageProjects: Record<string, Task> = {};
-  const stageTasks: Record<string, Task[]> = {};
+): CustomTask[] => {
+  const tasks: CustomTask[] = [];
+  const stageProjects: Record<string, CustomTask> = {};
+  const stageTasks: Record<string, CustomTask[]> = {};
 
   salesforceTasks.forEach((sfTask) => {
     const stageName =
@@ -92,7 +95,7 @@ export const mapSalesforceTasksToGanttTasks = (
       "Unknown Stage";
 
     const assignToName = sfTask.Owner?.Name ?? "Unknown Owner Name";
-    const taskStatus = sfTask.Status ?? "Unknown Task Status";
+    // const taskStatus = sfTask.Status ?? "Unknown Task Status";
 
     const stageStartDate = sfTask.Stage_Gates__r?.Start_Date__c ?? "null";
     const taskCompletedDate = sfTask.CompletedDateTime ?? "null";
@@ -112,6 +115,7 @@ export const mapSalesforceTasksToGanttTasks = (
         progress: 30,
         type: "project",
         hideChildren: true,
+        stage: stageId, // Assign the stage to the project
       };
       tasks.push(stageProjects[stageId]);
       stageTasks[stageId] = [];
@@ -132,7 +136,7 @@ export const mapSalesforceTasksToGanttTasks = (
       (taskEndDate.getTime() - taskStartDate.getTime()) / (1000 * 60 * 60 * 24)
     );
 
-    const task: Task = {
+    const task: CustomTask = {
       id: sfTask.Id ?? "Unknown Task ID",
       name: sfTask.Subject ?? "Unknown Task",
       start: taskStartDate,
@@ -145,10 +149,10 @@ export const mapSalesforceTasksToGanttTasks = (
         progressColor: progress ? progressColor : "red",
         backgroundColor,
       },
-      status: taskStatus,
       duration: duration,
       assignedToName: assignToName,
       completedDate: taskCompletedDate,
+      stage: stageId, // Assign the stage to the task
     };
 
     stageTasks[stageId].push(task);
