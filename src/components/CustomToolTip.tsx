@@ -1,28 +1,28 @@
 import React from "react";
-import { Task as GanttTask } from "gantt-task-react";
+import { Task } from "gantt-task-react";
 
-interface ExtendedTask extends GanttTask {
+// Extend the Task interface to add custom fields
+interface CustomTask extends Task {
   status: string;
   duration: number;
   assignedToName: string;
   completedDate?: Date;
 }
 
-interface CustomTooltipProps {
-  task: ExtendedTask;
-}
-
-const CustomTooltip: React.FC<CustomTooltipProps> = ({ task }) => {
+const CustomTooltip: React.FC<{
+  task: Task; // Keep the task as the base Task type to satisfy GanttProps
+  fontSize: string;
+  fontFamily: string;
+}> = ({ task }) => {
   const {
     name,
-    status,
-    duration,
-    assignedToName,
     start,
     end,
-    completedDate,
     type,
   } = task;
+
+  // Type-cast task to CustomTask where needed
+  const customTask = task as CustomTask;
 
   // Format dates
   const formatDate = (date: Date) =>
@@ -56,13 +56,13 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({ task }) => {
             <strong>Task Name:</strong> {name}
           </div>
           <div>
-            <strong>Task Status:</strong> {status}
+            <strong>Task Status:</strong> {customTask.status}
           </div>
           <div>
-            <strong>Duration:</strong> {duration + 1} days
+            <strong>Duration:</strong> {customTask.duration + 1} days
           </div>
           <div>
-            <strong>Assign To:</strong> {assignedToName}
+            <strong>Assign To:</strong> {customTask.assignedToName}
           </div>
           <div>
             <strong>Start Date:</strong> {formatDate(new Date(start))}
@@ -70,10 +70,10 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({ task }) => {
           <div>
             <strong>End Date:</strong> {formatDate(new Date(end))}
           </div>
-          {status === "Completed" && completedDate && (
+          {customTask.status === "Completed" && customTask.completedDate && (
             <div>
               <strong>Completed Date:</strong>
-              {formatDate(new Date(completedDate))}
+              {formatDate(new Date(customTask.completedDate))}
             </div>
           )}
         </>

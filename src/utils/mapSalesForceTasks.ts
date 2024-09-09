@@ -4,6 +4,10 @@ import { Task as GanttTask } from "gantt-task-react";
 
 interface CustomTask extends GanttTask {
   stage?: string; // Add stage property to the task
+  duration?: number;
+  assignedToName?: string;
+  completedDate?: Date | string;
+  status?: string;
 }
 
 const stageMapping: Record<string, number> = {
@@ -95,7 +99,7 @@ export const mapSalesforceTasksToGanttTasks = (
       "Unknown Stage";
 
     const assignToName = sfTask.Owner?.Name ?? "Unknown Owner Name";
-    // const taskStatus = sfTask.Status ?? "Unknown Task Status";
+    const taskStatus = sfTask.Status ?? "Unknown Task Status";
 
     const stageStartDate = sfTask.Stage_Gates__r?.Start_Date__c ?? "null";
     const taskCompletedDate = sfTask.CompletedDateTime ?? "null";
@@ -115,7 +119,6 @@ export const mapSalesforceTasksToGanttTasks = (
         progress: 30,
         type: "project",
         hideChildren: true,
-        stage: stageId, // Assign the stage to the project
       };
       tasks.push(stageProjects[stageId]);
       stageTasks[stageId] = [];
@@ -145,14 +148,15 @@ export const mapSalesforceTasksToGanttTasks = (
       type: "task",
       project: stageId,
       dependencies: [],
+      status: taskStatus,
       styles: {
         progressColor: progress ? progressColor : "red",
         backgroundColor,
       },
       duration: duration,
-      assignedToName: assignToName,
+      assignedToName: assignToName || "Unassigned",
       completedDate: taskCompletedDate,
-      stage: stageId, // Assign the stage to the task
+      // stage: stageId, // Assign the stage to the task
     };
 
     stageTasks[stageId].push(task);
