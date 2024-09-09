@@ -1,8 +1,7 @@
 import React from "react";
 import styles from "./task-list-table.module.css";
+import { Task } from "gantt-task-react";
 import { EnhancedTask } from "./EnhancedTask";
-
-
 
 export const TaskListTableDefault: React.FC<{
   rowHeight: number;
@@ -10,10 +9,10 @@ export const TaskListTableDefault: React.FC<{
   fontFamily: string;
   fontSize: string;
   locale: string;
-  tasks: EnhancedTask[];
+  tasks: Task[];
   selectedTaskId: string;
   setSelectedTask: (taskId: string) => void;
-  onExpanderClick: (task: EnhancedTask) => void;
+  onExpanderClick: (task: Task) => void;
 }> = ({
   rowHeight,
   rowWidth,
@@ -37,10 +36,12 @@ export const TaskListTableDefault: React.FC<{
         let expanderSymbol = "▶";
 
         if (t.project) {
-          expanderSymbol = t.subTasksHidden ? "▶" : "";
+          expanderSymbol = (t as EnhancedTask).subTasksHidden ? "▶" : "";
         }
 
-        const indentationDepth = t.depth * 10;
+        const indentationDepth = (t as EnhancedTask).depth
+          ? (t as EnhancedTask).depth * 10
+          : 0;
         const indentationStyle = {
           marginLeft: `${indentationDepth}px`,
         };

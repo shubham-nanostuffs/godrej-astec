@@ -2,12 +2,12 @@ import { useEffect, useState } from "react";
 import { fetchSalesforceTaskData } from "../services/salesforceTaskApi";
 import { Gantt, Task, ViewMode } from "gantt-task-react";
 import { mapSalesforceTasksToGanttTasks } from "../utils/mapSalesForceTasks";
-import "gantt-task-react/dist/index.css";
 import { TaskListHeaderDefault } from "./TaskListHeader";
+import CommonDropdown from "./Dropdown";
+import "gantt-task-react/dist/index.css";
+import { Task as GanttTask } from "gantt-task-react";
 import { TaskListTableDefault } from "./TaskListTable";
 import CustomTooltip from "./CustomToolTip";
-import CommonDropdown from "./Dropdown";
-import { Task as GanttTask } from "gantt-task-react";
 
 interface CustomTask extends GanttTask {
   stage?: string; // Add stage property to the task
@@ -82,13 +82,14 @@ export const HomeComponent: React.FC<HomeComponentProps> = ({
     setTasks(tasks.map((t) => (t.id === task.id ? task : t)));
   };
 
-  // Group tasks by stage
-  const tasksByStage = tasks.reduce((acc, task) => {
-    const stage = task.stage || "Unknown Stage";
-    if (!acc[stage]) acc[stage] = [];
-    acc[stage].push(task);
-    return acc;
-  }, {} as Record<string, CustomTask[]>);
+    // Group tasks by stage
+    const tasksByStage = tasks.reduce((acc, task) => {
+      const customTask = task as CustomTask; // Cast task to CustomTask
+      const stage = customTask.stage || "Unknown Stage";
+      if (!acc[stage]) acc[stage] = [];
+      acc[stage].push(customTask);
+      return acc;
+    }, {} as Record<string, CustomTask[]>);
 
   return (
     <div className="h-full">

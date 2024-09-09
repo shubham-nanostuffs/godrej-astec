@@ -25,6 +25,7 @@ export const fetchSalesforceProjectData = async (
 
     return response.data;
   } catch (error) {
+    console.error("Error fetching project data:", error);
     throw error;
   }
 };
