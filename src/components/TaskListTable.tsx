@@ -30,6 +30,7 @@ export const TaskListTableDefault: React.FC<{
         fontFamily: fontFamily,
         fontSize: fontSize,
         border: "2px",
+        textWrap: "wrap",
       }}
     >
       {tasks.map((t) => {
@@ -49,7 +50,7 @@ export const TaskListTableDefault: React.FC<{
         return (
           <div
             className={styles.taskListTableRow}
-            style={{ height: rowHeight }}
+            style={{ height: rowHeight, textWrap: "wrap" }}
             key={`${t.id}row`}
           >
             <div
@@ -75,7 +76,7 @@ export const TaskListTableDefault: React.FC<{
                 >
                   {expanderSymbol}
                 </div>
-                <div>{t.name}</div>
+                <div className="text-wrap">{t.name}</div>
               </div>
             </div>
           </div>
