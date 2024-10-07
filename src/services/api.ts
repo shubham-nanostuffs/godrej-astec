@@ -1,4 +1,3 @@
-// src/services/api.ts
 import axios, { AxiosResponse } from "axios";
 
 export interface AuthTokenResponse {

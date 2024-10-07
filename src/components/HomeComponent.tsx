@@ -8,6 +8,7 @@ import "gantt-task-react/dist/index.css";
 import { Task as GanttTask } from "gantt-task-react";
 import { TaskListTableDefault } from "./TaskListTable";
 import CustomTooltip from "./CustomToolTip";
+import { fetchSalesforcePlannedDatesData } from "../services/salesforcePlannedDatesApi";
 
 interface CustomTask extends GanttTask {
   stage?: string; // Add stage property to the task
@@ -64,9 +65,34 @@ export const HomeComponent: React.FC<HomeComponentProps> = ({
     }
   };
 
+  const loadPlannedDates = async (projectId: string) => {
+    if (!projectId) return;
+
+    setLoading(true); // Start loading
+    setError(null); // Reset any previous errors
+
+    try {
+      // testing Project ID
+      // projectId = "a0TIl000000I4gpMAC"; 
+
+      // Fetch planned Dates Data for the selected project
+      const plannedDatesData = await fetchSalesforcePlannedDatesData(
+        accessToken,
+        projectId
+      );
+      console.log(plannedDatesData);
+    } catch (err) {
+      console.error("Failed to fetch planned Dates Data :", err);
+      setError("Failed to fetch planned Dates Data ");
+    } finally {
+      setLoading(false); // Stop loading
+    }
+  };
+
   // Effect to load tasks when the selected project changes
   useEffect(() => {
     loadTasks(selectedProject);
+    loadPlannedDates(selectedProject);
   }, [selectedProject, accessToken]);
 
   // Handle project selection from the dropdown
@@ -82,14 +108,14 @@ export const HomeComponent: React.FC<HomeComponentProps> = ({
     setTasks(tasks.map((t) => (t.id === task.id ? task : t)));
   };
 
-    // Group tasks by stage
-    const tasksByStage = tasks.reduce((acc, task) => {
-      const customTask = task as CustomTask; // Cast task to CustomTask
-      const stage = customTask.stage || "Unknown Stage";
-      if (!acc[stage]) acc[stage] = [];
-      acc[stage].push(customTask);
-      return acc;
-    }, {} as Record<string, CustomTask[]>);
+  // Group tasks by stage
+  const tasksByStage = tasks.reduce((acc, task) => {
+    const customTask = task as CustomTask; // Cast task to CustomTask
+    const stage = customTask.stage || "Unknown Stage";
+    if (!acc[stage]) acc[stage] = [];
+    acc[stage].push(customTask);
+    return acc;
+  }, {} as Record<string, CustomTask[]>);
 
   return (
     <div className="h-full">

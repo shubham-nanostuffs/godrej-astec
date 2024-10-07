@@ -1,4 +1,3 @@
-// src/services/salesforceProjectApi.ts
 import axios, { AxiosResponse } from "axios";
 
 export interface SalesforceProjectDataResponse {
