@@ -12,7 +12,7 @@ export const getPlannedDates = async (
         Authorization: `Bearer ${accessToken}`,
       },
     });
-    return { ...response.data };
+    return  response.data ;
   } catch (error) {
     console.error("Error fetching task data:", error);
     throw error;
