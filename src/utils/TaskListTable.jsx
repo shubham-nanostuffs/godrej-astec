@@ -10,8 +10,6 @@ export const TaskListTableDefault = ({
   onExpanderClick,
 }) => {
 
-  console.log("Expander Table");
-  
   return (
     <div
       className={styles.taskListWrapper}

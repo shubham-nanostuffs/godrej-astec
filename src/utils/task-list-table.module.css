@@ -29,11 +29,11 @@
 .taskListNameWrapper {
   display: flex;
 }
-.taskListExpander  ._taskListWrapper_xvy65_1 {
+.taskListExpander ._taskListWrapper_xvy65_1 {
   background-color: red;
 }
 
-.taskListExpander  {
+.taskListExpander {
   color: rgb(86 86 86);
   font-size: 0.6rem;
   padding: 0.15rem 0.2rem 0rem 0.2rem;
@@ -41,7 +41,6 @@
   cursor: pointer;
   margin-right: 5px;
   margin-left: 10;
-  
 }
 .taskListEmptyExpander {
   font-size: 0.6rem;
