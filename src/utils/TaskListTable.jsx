@@ -9,7 +9,6 @@ export const TaskListTableDefault = ({
   fontSize,
   onExpanderClick,
 }) => {
-
   return (
     <div
       className={styles.taskListWrapper}
@@ -78,7 +77,7 @@ TaskListTableDefault.propTypes = {
     PropTypes.shape({
       id: PropTypes.string.isRequired,
       name: PropTypes.string.isRequired,
-      project: PropTypes.bool,
+      project: PropTypes.string,
       subTasksHidden: PropTypes.bool,
       depth: PropTypes.number,
     })

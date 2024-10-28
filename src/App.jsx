@@ -21,7 +21,8 @@ function App() {
   const [view, setView] = useState(ViewMode.Week);
   const [tasks, setTasks] = useState([]);
   const [tasksData, setTasksData] = useState([]);
-  const [milestoneDate, setMilestoneDate] = useState(null); // Single milestone date
+  const [milestoneDate, setMilestoneDate] = useState(null);
+  const [isDataAvailable, setIsDataAvailable] = useState(true); // New state for data availability
 
   const fetchTokenAndTasks = async () => {
     try {
@@ -57,7 +58,10 @@ function App() {
       );
       const actualTasks = await getActualTasks(token, selectedOption.value);
 
-      // Set the milestone date from the API (e.g., "A0_Indicative_Commercial_Timelines__c" date)
+      console.log("Actual Tasks", actualTasks);
+      console.log("Planned Tasks", plannedDates);
+
+      // Set milestone date if available
       if (
         commercialTimelines &&
         commercialTimelines.records[0]?.A0_Indicative_Commercial_Timelines__c
@@ -67,6 +71,12 @@ function App() {
         );
       }
 
+      // Check if data is available for rendering
+      setIsDataAvailable(
+        actualTasks.records.length > 0 && plannedDates.records.length > 0
+      );
+
+      // Update tasks for Gantt if data exists
       const updatedTasks = createGanttTasks(
         tasksData,
         plannedDates,
@@ -79,16 +89,22 @@ function App() {
     }
   };
 
-  const getXPositionFromDate = (dateString) => {
-    const chartStartDate = new Date(tasks[0].start); // Starting date of the Gantt chart
-    chartStartDate.setDate(chartStartDate.getDate() - 1); // Add 24 hours to the start date
+  const getXPositionFromDate = (dateString, viewType = ViewMode.Day) => {
+    const chartStartDate = new Date(tasks[0].start);
+    chartStartDate.setDate(chartStartDate.getDate() - 1);
 
     const date = new Date(dateString);
-    const daysDifference = Math.floor(
-      (date - chartStartDate) / (1000 * 60 * 60 * 24)
-    );
-    const xPosition = daysDifference * 60.3; // Assuming each day is 60 pixels wide
-    return xPosition;
+    if (viewType === ViewMode.Week) {
+      const weeksDifference = Math.floor(
+        (date - chartStartDate) / (1000 * 60 * 60 * 24 * 7)
+      );
+      return weeksDifference * 70.3;
+    } else {
+      const daysDifference = Math.floor(
+        (date - chartStartDate) / (1000 * 60 * 60 * 24)
+      );
+      return daysDifference * 60.3;
+    }
   };
 
   useEffect(() => {
@@ -101,7 +117,7 @@ function App() {
         .querySelectorAll("rect.timeline-marker")
         .forEach((rect) => rect.remove());
 
-      const xPosition = getXPositionFromDate(milestoneDate);
+      const xPosition = getXPositionFromDate(milestoneDate, view);
       const rect = document.createElementNS(
         "http://www.w3.org/2000/svg",
         "rect"
@@ -127,6 +143,7 @@ function App() {
   const handleExpanderClick = (task) => {
     setTasks(tasks.map((t) => (t.id === task.id ? task : t)));
   };
+
   return (
     <div className="[&]:p-0">
       <h3 className="font-bold text-[25px]">Project Timeline - Gantt Chart</h3>
@@ -150,7 +167,7 @@ function App() {
           <div className="flex items-center gap-1">
             <p className="w-5 h-5 bg-orange-500"></p>
             <p className="font-bold">In Progress</p>
-          </div>{" "}
+          </div>
           <div className="flex items-center gap-1">
             <p className="w-5 h-5 bg-red-400"></p>
             <p className="font-bold">In Progress Overdue</p>
@@ -168,29 +185,30 @@ function App() {
           <ViewSwitcher onViewModeChange={(viewMode) => setView(viewMode)} />
         </div>
       </div>
+
       <div className="border-2 rounded-md w-full mt-4">
-        {/* Render the stages with tasks */}
-        {Object.keys(tasksByStage).map((stageId) => (
-          <div key={stageId} className="mb-6">
-            <Gantt
-              tasks={tasksByStage[stageId]}
-              viewMode={view}
-              projectProgressColor="#bd8c06"
-              projectBackgroundColor="#bd8c06"
-              projectBackgroundSelectedColor="#bd8c06"
-              projectProgressSelectedColor="#bd8c06"
-              TooltipContent={CustomTooltip} // Use the custom tooltip component
-              //  onDoubleClick={handleDblClick}
-              TaskListHeader={(props) => <TaskListHeaderDefault {...props} />}
-              TaskListTable={(props) => <TaskListTableDefault {...props} />}
-              onExpanderClick={handleExpanderClick}
-              //  listCellWidth={isChecked ? "155px" : ""}
-              //  columnWidth={columnWidth}
-              ganttHeight={400}
-              timeStep={0}
-            />
-          </div>
-        ))}
+        {isDataAvailable ? (
+          Object.keys(tasksByStage).map((stageId) => (
+            <div key={stageId} className="mb-6">
+              <Gantt
+                tasks={tasksByStage[stageId]}
+                viewMode={view}
+                projectProgressColor="#bd8c06"
+                projectBackgroundColor="#bd8c06"
+                projectBackgroundSelectedColor="#bd8c06"
+                projectProgressSelectedColor="#bd8c06"
+                TooltipContent={CustomTooltip}
+                TaskListHeader={(props) => <TaskListHeaderDefault {...props} />}
+                TaskListTable={(props) => <TaskListTableDefault {...props} />}
+                onExpanderClick={handleExpanderClick}
+                ganttHeight={400}
+                timeStep={0}
+              />
+            </div>
+          ))
+        ) : (
+          <div className="text-center text-lg text-gray-500">No data found</div>
+        )}
       </div>
     </div>
   );

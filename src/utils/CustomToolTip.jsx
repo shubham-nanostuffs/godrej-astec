@@ -29,6 +29,8 @@ const CustomTooltip = ({ task, fontSize, fontFamily }) => {
       ? "green"
       : "#ccc";
 
+  const plannedFields = assignedToName && duration;
+
   return (
     <div
       style={{
@@ -57,14 +59,19 @@ const CustomTooltip = ({ task, fontSize, fontFamily }) => {
           <div>
             <strong>Task Name:</strong> {name}
           </div>
+          {plannedFields && (
+            <>
+              <div>
+                <strong>Assign To:</strong> {assignedToName}
+              </div>
+
+              <div>
+                <strong>Duration:</strong> {duration} days
+              </div>
+            </>
+          )}
           <div>
-            <strong>Assign To:</strong> {assignedToName}
-          </div>
-          <div>
-            <strong>Task Status:</strong> {status}
-          </div>
-          <div>
-            <strong>Duration:</strong> {duration} days
+            <strong>Task Status:</strong> {status ? status : "Yet to start"}
           </div>
           <div>
             <strong>Planned Start Date:</strong> {formatDate(plannedStart)}
@@ -72,18 +79,25 @@ const CustomTooltip = ({ task, fontSize, fontFamily }) => {
           <div>
             <strong>Planned End Date:</strong> {formatDate(plannedEnd)}
           </div>
-          <div>
-            <strong>Actual Start Date:</strong> {formatDate(start)}
-          </div>
+          {plannedFields && (
+            <div>
+              <strong>Actual Start Date:</strong> {formatDate(start)}
+            </div>
+          )}
 
           {status === "Completed" && completedDate ? (
             <div>
               <strong>Completion Date:</strong> {formatDate(completedDate)}
             </div>
           ) : (
-            <div>
-              <strong>Expected End Date:</strong> {formatDate(expectedEndDate)}
-            </div>
+            <>
+              {plannedFields && (
+                <div>
+                  <strong>Expected End Date:</strong>{" "}
+                  {formatDate(expectedEndDate)}
+                </div>
+              )}
+            </>
           )}
         </>
       )}

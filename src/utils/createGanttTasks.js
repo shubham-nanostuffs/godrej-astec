@@ -7,7 +7,6 @@ const stages = [
 // Main function to create Gantt chart tasks
 export const createGanttTasks = (templateTasks, plannedDates, actualTasks) => {
   const currentDate = new Date();
-
   // Helper function to get planned start and end dates for a task
   const getPlannedDatesForTask = (taskName) => {
     const taskKey = taskName.substring(0, 5);
@@ -135,6 +134,7 @@ export const createGanttTasks = (templateTasks, plannedDates, actualTasks) => {
         // Update project-level start and end dates
         if (!projectStartDate || startDate < projectStartDate) projectStartDate = startDate;
         if (!projectEndDate || expectedEndDate > projectEndDate) projectEndDate = expectedEndDate;
+        if (!projectEndDate || completedDate > projectEndDate) projectEndDate = completedDate;
 
         const progress = calculateProgress(startDate, endDate, currentDate, completedDate, status, overdueFlag, expectedEndDate);
 
@@ -156,7 +156,7 @@ export const createGanttTasks = (templateTasks, plannedDates, actualTasks) => {
           plannedEnd: plannedTaskDates.end,
           duration: actualTaskDetails?.duration,
           expectedEndDate: expectedEndDate,
-          assignedToName: assignToName || "Unassigned",
+          assignedToName: assignToName,
           styles: { progressColor, backgroundColor }
         });
       }
