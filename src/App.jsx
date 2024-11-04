@@ -193,10 +193,10 @@ function App() {
               <Gantt
                 tasks={tasksByStage[stageId]}
                 viewMode={view}
-                projectProgressColor="blue"
-                projectBackgroundColor="blue"
-                projectBackgroundSelectedColor="blue"
-                projectProgressSelectedColor="blue"
+                // projectProgressColor="blue"
+                // projectBackgroundColor="blue"
+                // projectBackgroundSelectedColor="blue"
+                // projectProgressSelectedColor="blue"
                 TooltipContent={CustomTooltip}
                 TaskListHeader={(props) => <TaskListHeaderDefault {...props} />}
                 TaskListTable={(props) => <TaskListTableDefault {...props} />}

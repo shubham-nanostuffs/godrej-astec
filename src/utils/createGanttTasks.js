@@ -159,6 +159,8 @@ export const createGanttTasks = (templateTasks, plannedDates, actualTasks) => {
       styles: {
         progressColor: "gray",
         backgroundColor: "gray",
+        progressSelectedColor: "gray",
+        backgroundSelectedColor: "green",
       }, // Default to 'Yet to start' color
     });
 
@@ -238,7 +240,12 @@ export const createGanttTasks = (templateTasks, plannedDates, actualTasks) => {
           duration: actualTaskDetails?.duration,
           expectedEndDate: expectedEndDate,
           assignedToName: assignToName,
-          styles: { progressColor, backgroundColor },
+          styles: {
+            progressColor,
+            backgroundColor,
+            backgroundSelectedColor: backgroundColor,
+            progressSelectedColor: progressColor,
+          },
         });
       }
     });
@@ -264,20 +271,26 @@ export const createGanttTasks = (templateTasks, plannedDates, actualTasks) => {
     ganttTasks[projectIndex].end = stageDates[stage].end;
     ganttTasks[projectIndex].projectStatus = projectStatus; // Set the determined projectStatus
 
+    const progressColor =
+      projectStatus === "In Progress"
+        ? "orange"
+        : projectStatus === "Completed"
+        ? "green"
+        : "gray";
+
+    const backgroundColor =
+      projectStatus === "In Progress"
+        ? "orange"
+        : projectStatus === "Completed"
+        ? "green"
+        : "gray";
+
     // Set project color based on projectStatus
     ganttTasks[projectIndex].styles = {
-      progressColor:
-        projectStatus === "In Progress"
-          ? "orange"
-          : projectStatus === "Completed"
-          ? "green"
-          : "gray",
-      backgroundColor:
-        projectStatus === "In Progress"
-          ? "orange"
-          : projectStatus === "Completed"
-          ? "green"
-          : "gray",
+      progressColor: progressColor,
+      backgroundColor: backgroundColor,
+      backgroundSelectedColor: backgroundColor,
+      progressSelectedColor: progressColor,
     };
   });
 
@@ -307,19 +320,25 @@ export const createGanttTasks = (templateTasks, plannedDates, actualTasks) => {
             ? "Completed"
             : "Yet to start";
 
+        const progressColor =
+          ganttTasks[projectIndex].projectStatus === "In Progress"
+            ? "orange"
+            : ganttTasks[projectIndex].projectStatus === "Completed"
+            ? "green"
+            : "gray";
+
+        const backgroundColor =
+          ganttTasks[projectIndex].projectStatus === "In Progress"
+            ? "orange"
+            : ganttTasks[projectIndex].projectStatus === "Completed"
+            ? "green"
+            : "gray";
+
         ganttTasks[projectIndex].styles = {
-          progressColor:
-            ganttTasks[projectIndex].projectStatus === "In Progress"
-              ? "orange"
-              : ganttTasks[projectIndex].projectStatus === "Completed"
-              ? "green"
-              : "gray",
-          backgroundColor:
-            ganttTasks[projectIndex].projectStatus === "In Progress"
-              ? "orange"
-              : ganttTasks[projectIndex].projectStatus === "Completed"
-              ? "green"
-              : "gray",
+          progressColor: progressColor,
+          backgroundColor: backgroundColor,
+          backgroundSelectedColor: backgroundColor,
+          progressSelectedColor: progressColor,
         };
       }
     }
