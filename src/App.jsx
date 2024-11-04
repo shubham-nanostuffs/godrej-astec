@@ -124,7 +124,7 @@ function App() {
       );
       rect.setAttribute("x", xPosition);
       rect.setAttribute("y", "0");
-      rect.setAttribute("width", "10");
+      rect.setAttribute("width", "3");
       rect.setAttribute("height", "4550");
       rect.setAttribute("fill", "blue");
       rect.classList.add("timeline-marker");
@@ -193,10 +193,10 @@ function App() {
               <Gantt
                 tasks={tasksByStage[stageId]}
                 viewMode={view}
-                projectProgressColor="#bd8c06"
-                projectBackgroundColor="#bd8c06"
-                projectBackgroundSelectedColor="#bd8c06"
-                projectProgressSelectedColor="#bd8c06"
+                projectProgressColor="blue"
+                projectBackgroundColor="blue"
+                projectBackgroundSelectedColor="blue"
+                projectProgressSelectedColor="blue"
                 TooltipContent={CustomTooltip}
                 TaskListHeader={(props) => <TaskListHeaderDefault {...props} />}
                 TaskListTable={(props) => <TaskListTableDefault {...props} />}

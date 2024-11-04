@@ -1,4 +1,4 @@
-const CustomTooltip = ({ task, fontSize, fontFamily }) => {
+const CustomTooltip = ({ task, fontSize, fontFamily, project }) => {
   const {
     name,
     start,
@@ -11,7 +11,9 @@ const CustomTooltip = ({ task, fontSize, fontFamily }) => {
     plannedStart,
     completedDate,
     expectedEndDate,
+    projectStatus
   } = task;
+
 
   // Format dates
   const formatDate = (date) =>
@@ -51,6 +53,9 @@ const CustomTooltip = ({ task, fontSize, fontFamily }) => {
           </div>
           <div>
             <strong>End Date:</strong> {formatDate(end)}
+          </div>
+          <div>
+            <strong>Project Status:</strong> {projectStatus}
           </div>
         </>
       ) : (
