@@ -58,8 +58,8 @@ function App() {
       );
       const actualTasks = await getActualTasks(token, selectedOption.value);
 
-      console.log("Actual Tasks", actualTasks);
-      console.log("Planned Tasks", plannedDates);
+      // console.log("Actual Tasks", actualTasks);
+      // console.log("Planned Tasks", plannedDates);
 
       // Set milestone date if available
       if (
@@ -193,16 +193,11 @@ function App() {
               <Gantt
                 tasks={tasksByStage[stageId]}
                 viewMode={view}
-                // projectProgressColor="blue"
-                // projectBackgroundColor="blue"
-                // projectBackgroundSelectedColor="blue"
-                // projectProgressSelectedColor="blue"
                 TooltipContent={CustomTooltip}
                 TaskListHeader={(props) => <TaskListHeaderDefault {...props} />}
                 TaskListTable={(props) => <TaskListTableDefault {...props} />}
                 onExpanderClick={handleExpanderClick}
                 ganttHeight={400}
-                timeStep={0}
               />
             </div>
           ))
