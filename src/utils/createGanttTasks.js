@@ -17,7 +17,7 @@ const stages = [
 // Main function to create Gantt chart tasks
 export const createGanttTasks = (templateTasks, plannedDates, actualTasks) => {
   const currentDate = new Date();
-  console.log("Template tasks", templateTasks);
+  console.log("Planned dates", plannedDates);
 
   // Helper function to get planned start and end dates for a task
   const getPlannedDatesForTask = (taskName) => {
@@ -177,7 +177,7 @@ export const createGanttTasks = (templateTasks, plannedDates, actualTasks) => {
     // Loop through each task within the stage and add task details to Gantt tasks
     stageTasks.forEach((task) => {
       const actualTaskDetails = getActualTaskDetails(task.Name);
-      const plannedTaskDates = getPlannedDatesForTask(task.Name);
+      let plannedTaskDates = getPlannedDatesForTask(task.Name);
 
       if (actualTaskDetails || plannedTaskDates) {
         const startDate = new Date(
@@ -186,6 +186,7 @@ export const createGanttTasks = (templateTasks, plannedDates, actualTasks) => {
         const endDate = new Date(
           actualTaskDetails?.end || plannedTaskDates?.end
         );
+
         const status = actualTaskDetails?.status;
         const completedDate = actualTaskDetails?.completedDate ?? "";
         const overdueFlag = actualTaskDetails?.overdueFlag;
@@ -297,40 +298,48 @@ export const createGanttTasks = (templateTasks, plannedDates, actualTasks) => {
     };
   });
 
+  const gStageDates = {};
   // Second pass: Adjust dates and projectStatus for "G" stages based on dependencies
   stages.forEach((stage, stageIndex) => {
     const projectIndex = ganttTasks.findIndex((task) => task.name === stage);
     const gStageIndices = templateTasks
-      .map((task, index) => ({ task, index }))
-      .filter((item) => item.task.Name.startsWith("G"))
-      .map((item) => item.index);
-    console.log("Stage tasks", gStageIndices);
+      .map((task, index) => ({ task, index })) // Create an array of objects with task and index
+      .filter((item) => item.task.Name.startsWith("G")) // Filter tasks where Name starts with "G"
+      .map((item) => ({ task: item.task, index: item.index })); // Return both task and index in the resulting array
+
+    // console.log("G Stage Indices with Task and Index:", gStageIndices);
 
     if (stage.startsWith("G") && projectIndex !== -1) {
       const prevStage = stages[stageIndex - 1];
       const nextStage = stages[stageIndex + 1];
+      // console.log("Prev", prevStage, "Next", nextStage);
 
       if (stageDates[prevStage] && stageDates[nextStage]) {
         const prevStageEnd = new Date(stageDates[prevStage].end); // Convert to Date object
-        // Find the index of the current stage in gStageIndices
-        const gStageIndex = gStageIndices.find(
-          (index) => templateTasks[index].Name === stage
+
+        const gStage = gStageIndices.find(
+          (item) => item.task.Name === stage // Use the task property directly
         );
+
+        console.log("G Stages............", gStage);
 
         // Use the index to get the Days_To_Complete__c value from templateTasks
-        const daysToComplete =
-          templateTasks[gStageIndex].Days_To_Complete__c || 0;
+        const daysToComplete = gStage
+          ? gStage.task.Days_To_Complete__c || 0
+          : 0;
 
-        // console.log(
-        //   ["Stage Name", templateTasks[gStageIndex].Name],
-        //   ["Days", daysToComplete],
-        //   ["Stage Index", gStageIndex]
-        // );
-        // Update ganttTasks start and end
-        ganttTasks[projectIndex].start = prevStageEnd;
-        ganttTasks[projectIndex].end = new Date(
-          prevStageEnd.getTime() + daysToComplete * 24 * 60 * 60 * 1000 // Add days in milliseconds
+        // Calculate start and end dates for the current G stage
+        const start = prevStageEnd;
+        const end = new Date(
+          prevStageEnd.getTime() + daysToComplete * 24 * 60 * 60 * 1000
         );
+
+        // Store G stage dates in gStageDates object
+        gStageDates[stage] = { start, end };
+
+        // Update ganttTasks start and end
+        ganttTasks[projectIndex].start = start;
+        ganttTasks[projectIndex].end = end;
 
         const prevStageStatus = ganttTasks.find(
           (task) => task.name === prevStage
@@ -367,6 +376,130 @@ export const createGanttTasks = (templateTasks, plannedDates, actualTasks) => {
           progressSelectedColor: progressColor,
         };
       }
+    } else {
+      const prevStage = stages[stageIndex - 1];
+      const nextStage = stages[stageIndex + 1];
+      // console.log("Project Index", projectIndex);
+
+      // console.log("Prev", prevStage, "Next", nextStage);
+
+      // console.log("Using stored G stage dates:", gStageDates);
+      if (stageDates[prevStage] && stageDates[nextStage]) {
+        const prevStageEnd = new Date(stageDates[prevStage].end);
+
+        // Use G stage start and end dates from gStageDates
+        if (gStageDates) {
+          console.log("Using stored G stage dates:", gStageDates);
+        }
+      }
+      const stageTasks = templateTasks.filter(
+        (task) => task.Stage_Gate_Activities_Template__r.Name === stage
+      );
+
+      if (stageTasks.length === 0) return;
+
+      const extractTaskNumber = (taskName) => {
+        const match = taskName.match(/T(\d+)$/);
+        return match ? parseInt(match[1], 10) : 0;
+      };
+      // Array to store tasks with only actual dates
+      const tasksWithActualDates = [];
+      const tasksWithPlannedDates = [];
+      // Sort tasks within the stage by task number
+      stageTasks.sort(
+        (a, b) => extractTaskNumber(a.Name) - extractTaskNumber(b.Name)
+      );
+      stageTasks.forEach((task) => {
+        const actualTaskDetails = getActualTaskDetails(task.Name);
+        const plannedTaskDates = getPlannedDatesForTask(task.Name);
+
+        // console.log("Actual Task Details", actualTasks);
+
+        // Store tasks with only actual dates
+        if (actualTaskDetails) {
+          tasksWithActualDates.push({
+            name: `${task.Name} ${task.SUBJECT__c}`,
+            startDate: actualTaskDetails.start,
+            endDate: actualTaskDetails.end,
+            status: actualTaskDetails.status,
+          });
+        }
+        if (plannedTaskDates) {
+          tasksWithPlannedDates.push({
+            name: `${task.Name} ${task.SUBJECT__c}`,
+            startDate: plannedTaskDates.start,
+            endDate: plannedTaskDates.end,
+          });
+        }
+      });
+
+      console.log("Tasks with Planned dates", tasksWithActualDates);
+
+      const uniqueTasks = tasksWithPlannedDates.filter(
+        (task) =>
+          !tasksWithActualDates.find(
+            (plannedTask) => plannedTask.name === task.name
+          )
+      );
+      console.log("Unique Tasks", uniqueTasks);
+      // console.log("Gantt Tasks", ganttTasks);
+      const uniqueTaskNames = uniqueTasks.map((task) => task.name);
+
+      const templateTaskIndices = ganttTasks
+        .map((task, index) => {
+          if (uniqueTaskNames.includes(task.name)) {
+            // Calculate the difference between start and end dates in days
+            const startDate = new Date(task.start);
+            const endDate = new Date(task.end);
+            const project = task.project;
+            const diffInMilliseconds = endDate - startDate;
+            const diffInDays = diffInMilliseconds / (1000 * 60 * 60 * 24);
+
+            const stagesIndex = stages.findIndex((stage) =>
+              stage.includes(project)
+            );
+            const projectIndex = ganttTasks.findIndex(
+              (task) => task.name === stage
+            );
+            const prevStage = stages[stagesIndex - 1];
+            const nextStage = stages[stagesIndex + 1];
+            const prevStageEndDate = new Date(gStageDates[prevStage].end);
+            const currentStageEndDate = new Date(
+              prevStageEndDate.getTime() + diffInDays * 24 * 60 * 60 * 1000
+            );
+            return {
+              index: index,
+              task: task,
+              durationInDays: diffInDays,
+              project: project,
+              stagesIndex: stagesIndex !== -1 ? stagesIndex : null, // Return index or null if no match
+              projectIndex: projectIndex,
+              prevStage: prevStage,
+              nextStage: nextStage,
+              prevStageEndDate: prevStageEndDate,
+              currentStageEndDate: currentStageEndDate,
+            };
+          }
+          return null;
+        })
+        .filter(Boolean); // Filter out null values
+
+      templateTaskIndices.map((item) => {
+        ganttTasks[item.index].start = item.prevStageEndDate;
+        ganttTasks[item.projectIndex].start = item.prevStageEndDate;
+        // ganttTasks[item.projectIndex].end = item.currentStageEndDate;
+        ganttTasks[item.index].end = item.currentStageEndDate;
+      });
+      console.log("Template tasks", gStageIndices);
+
+      console.log(
+        "Template Task Indices",
+        templateTaskIndices.filter((index) => index !== undefined)
+      );
+
+      // console.log("G Stages", gStageIndices);
+
+      // fetch G Stages start and end date here
     }
   });
 
