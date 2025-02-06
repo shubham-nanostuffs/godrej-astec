@@ -14,6 +14,7 @@ import { ViewSwitcher } from "./utils/ViewSwitcher";
 import CustomTooltip from "./utils/CustomToolTip";
 import "./App.css";
 import "gantt-task-react/dist/index.css";
+import { getStagePlannedDates } from "./api/getStagePlannedDates";
 
 function App() {
   const [projectsOptions, setProjectsOptions] = useState([]);
@@ -52,6 +53,11 @@ function App() {
     try {
       const token = localStorage.getItem("salesforce_access_token");
       const plannedDates = await getPlannedDates(token, selectedOption.value);
+      const stagePlannedDates = await getStagePlannedDates(
+        token,
+        selectedOption.value
+      );
+
       const commercialTimelines = await getCommercialTimelines(
         token,
         selectedOption.value
@@ -80,6 +86,7 @@ function App() {
       const updatedTasks = createGanttTasks(
         tasksData,
         plannedDates,
+        stagePlannedDates,
         actualTasks,
         commercialTimelines
       );
