@@ -23,6 +23,9 @@ export const createGanttTasks = (
 ) => {
   const currentDate = new Date();
   console.log("Planned dates", plannedDates);
+  console.log("Actual Tasks", actualTasks);
+  console.log("Stages Planned Date", stagePlannedDates);
+
   // Helper function to get planned dates for a specific stage
 
   const getPlannedStageDates = (stageName) => {
@@ -71,6 +74,11 @@ export const createGanttTasks = (
         }
       : null;
   };
+  const gStageIndices = templateTasks
+    .map((task, index) => ({ task, index })) // Create an array of objects with task and index
+    .filter((item) => item.task.Name.startsWith("G")) // Filter tasks where Name starts with "G"
+    .map((item) => item.index); // Return both task and index in the resulting array
+
   const getPlannedDatesForGStages = (stageName) => {
     // Extract the first two characters as the task key (G1, G2, etc.)
     const taskKey = stageName.substring(0, 2);
@@ -202,7 +210,8 @@ export const createGanttTasks = (
 
     // Placeholder for project-level Gantt task
     const projectIndex = ganttTasks.length;
-
+    const stagesPlannedDate = getPlannedStageDates(stage);
+    let gstagePlannedDates = getPlannedDatesForGStages(stage);
     let projectStatus = "Yet to start"; // Default status
 
     ganttTasks.push({
@@ -213,6 +222,9 @@ export const createGanttTasks = (
       progress: 100,
       hideChildren: true,
       type: "project",
+      plannedStart: stagesPlannedDate.plannedStart ?? gstagePlannedDates.start,
+      plannedEnd: stagesPlannedDate.plannedEnd ?? gstagePlannedDates.end,
+      delayedDuration: delayedDuration(),
       projectStatus: projectStatus,
       styles: {
         progressColor: "gray",
@@ -357,10 +369,6 @@ export const createGanttTasks = (
   // Second pass: Adjust dates and projectStatus for "G" stages based on dependencies
   stages.forEach((stage, stageIndex) => {
     const projectIndex = ganttTasks.findIndex((task) => task.name === stage);
-    const gStageIndices = templateTasks
-      .map((task, index) => ({ task, index })) // Create an array of objects with task and index
-      .filter((item) => item.task.Name.startsWith("G")) // Filter tasks where Name starts with "G"
-      .map((item) => item.index); // Return both task and index in the resulting array
 
     // console.log("G Stage Indices with Task and Index:", stageIndex);
 
@@ -546,12 +554,10 @@ export const createGanttTasks = (
             //   prevStageEndDate.getTime() + diffInDays * 24 * 60 * 60 * 1000
             // );
             ganttTasks[index].start = new Date(
-              task.start.getTime() +
-                (delayedDuration() + gstageDuration) * 24 * 60 * 60 * 1000
+              task.start.getTime() + delayedDuration() * 24 * 60 * 60 * 1000
             );
             ganttTasks[index].end = new Date(
-              task.end.getTime() +
-                (delayedDuration() + gstageDuration) * 24 * 60 * 60 * 1000
+              task.end.getTime() + delayedDuration() * 24 * 60 * 60 * 1000
             );
             const plannedDates = getPlannedStageDates(project);
 
@@ -559,12 +565,12 @@ export const createGanttTasks = (
               // Ensure plannedDates is valid
               ganttTasks[projectIndex].start = new Date(
                 new Date(plannedDates.plannedStart).getTime() +
-                  (delayedDuration() + gstageDuration) * 24 * 60 * 60 * 1000
+                  delayedDuration() * 24 * 60 * 60 * 1000
               );
 
               ganttTasks[projectIndex].end = new Date(
                 new Date(plannedDates.plannedEnd).getTime() +
-                  (delayedDuration() + gstageDuration) * 24 * 60 * 60 * 1000
+                  delayedDuration() * 24 * 60 * 60 * 1000
               );
             } else {
               console.warn(plannedDates); // Log the error message if the stage was not found
