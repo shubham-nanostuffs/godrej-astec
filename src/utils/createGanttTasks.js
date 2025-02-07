@@ -593,28 +593,9 @@ export const createGanttTasks = (
         })
         .filter(Boolean); // Filter out null values
 
-      // templateTaskIndices.map((item) => {
-      //   console.log("Items", item);
-
-      //   ganttTasks[item.index].start = item.prevStageEndDate;
-      //   ganttTasks[item.projectIndex].start = item.prevStageEndDate;
-      //   // ganttTasks[item.projectIndex].end = item.currentStageEndDate;
-      //   ganttTasks[item.index].end = item.currentStageEndDate;
-      // });
-      // console.log("Template tasks", gStageIndices);
-
-      // console.log(
-      //   "Template Task Indices",
-      //   templateTaskIndices.filter((index) => index !== undefined)
-      // );
-
-      // console.log("G Stages", gStageIndices);
-
-      // fetch G Stages start and end date here
+    
     }
   });
-
-  // console.log("Stage Dates", stages);
 
   return ganttTasks;
 };

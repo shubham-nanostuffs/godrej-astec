@@ -49,10 +49,10 @@ const CustomTooltip = ({ task, fontSize, fontFamily, project }) => {
             <strong>Stage Name:</strong> {name}
           </div>
           <div>
-            <strong>Start Date:</strong> {formatDate(start)}
+            <strong>Actual Start:</strong> {formatDate(start)}
           </div>
           <div>
-            <strong>End Date:</strong> {formatDate(end)}
+            <strong>Estimated End:</strong> {formatDate(end)}
           </div>
           <div>
             <strong>Project Status:</strong> {projectStatus}
