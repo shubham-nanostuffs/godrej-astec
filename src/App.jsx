@@ -14,6 +14,7 @@ import { ViewSwitcher } from "./utils/ViewSwitcher";
 import CustomTooltip from "./utils/CustomToolTip";
 import "./App.css";
 import "gantt-task-react/dist/index.css";
+import { getStagePlannedDates } from "./api/getStagePlannedDates";
 
 function App() {
   const [projectsOptions, setProjectsOptions] = useState([]);
@@ -52,6 +53,11 @@ function App() {
     try {
       const token = localStorage.getItem("salesforce_access_token");
       const plannedDates = await getPlannedDates(token, selectedOption.value);
+      const stagePlannedDates = await getStagePlannedDates(
+        token,
+        selectedOption.value
+      );
+
       const commercialTimelines = await getCommercialTimelines(
         token,
         selectedOption.value
@@ -80,6 +86,7 @@ function App() {
       const updatedTasks = createGanttTasks(
         tasksData,
         plannedDates,
+        stagePlannedDates,
         actualTasks,
         commercialTimelines
       );
@@ -161,11 +168,11 @@ function App() {
       <div className="mt-4 flex justify-between">
         <div className="flex gap-4">
           <div className="flex items-center gap-1">
-            <p className="w-5 h-5 bg-gray-400"></p>
+            <p className="w-5 h-5 bg-[gray]"></p>
             <p className="font-bold">Planned</p>
           </div>
           <div className="flex items-center gap-1">
-            <p className="w-5 h-5 bg-orange-500"></p>
+            <p className="w-5 h-5 bg-[orange]"></p>
             <p className="font-bold">In Progress</p>
           </div>
           <div className="flex items-center gap-1">
@@ -173,11 +180,11 @@ function App() {
             <p className="font-bold">In Progress Overdue</p>
           </div>
           <div className="flex items-center gap-1">
-            <p className="w-5 h-5 bg-green-800"></p>
+            <p className="w-5 h-5 bg-[green]"></p>
             <p className="font-bold">Completed</p>
           </div>
           <div className="flex items-center gap-1">
-            <p className="w-5 h-5 bg-red-600"></p>
+            <p className="w-5 h-5 bg-[red]"></p>
             <p className="font-bold">Completed Overdue</p>
           </div>
         </div>
