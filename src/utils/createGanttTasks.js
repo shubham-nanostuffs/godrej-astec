@@ -386,7 +386,7 @@ export const createGanttTasks = (
   stages.forEach((stage, stageIndex) => {
     const projectIndex = ganttTasks.findIndex((task) => task.name === stage);
 
-    console.log("Project Index and Stage:", projectIndex, stage);
+    // console.log("Project Index and Stage:", projectIndex, stage);
 
     if (stage.startsWith("G") && projectIndex !== -1) {
       const prevStage = stages[stageIndex - 1];
@@ -401,7 +401,6 @@ export const createGanttTasks = (
         let a0g1ExpectedDate = new Date(stageDates["A0-G1"].end);
 
         expectedDelay = calculateDelayedDuration(a0g1ExpectedDate);
-        console.log("Prev Stage End", prevStage, expectedDelay, projectIndex);
         ganttTasks[0].delayedDuration = expectedDelay;
 
         // Find the index of the current stage in gStageIndices

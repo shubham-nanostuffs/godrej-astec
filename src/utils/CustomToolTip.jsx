@@ -15,8 +15,6 @@ const CustomTooltip = ({ task, fontSize, fontFamily, project }) => {
     delayedDuration,
   } = task;
 
-  console.log("Task...", task);
-
   // Format dates
   const formatDate = (date) =>
     new Date(date).toLocaleDateString(undefined, {
