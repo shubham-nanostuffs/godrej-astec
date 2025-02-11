@@ -238,7 +238,7 @@ export const createGanttTasks = (
       type: "project",
       plannedStart: stagesPlannedDate.plannedStart ?? gstagePlannedDates.start,
       plannedEnd: stagesPlannedDate.plannedEnd ?? gstagePlannedDates.end,
-      delayedDuration: "",
+      delayedDuration: delayedDuration(),
       projectStatus: projectStatus,
       styles: {
         progressColor: "gray",
@@ -342,7 +342,7 @@ export const createGanttTasks = (
       ? "Completed"
       : hasInProgress
       ? "In Progress"
-      : "Yet to Start";
+      : "Yet to start";
 
     // Update initial project-level start and end dates in `stageDates`
     stageDates[stage] = {
@@ -386,7 +386,7 @@ export const createGanttTasks = (
   stages.forEach((stage, stageIndex) => {
     const projectIndex = ganttTasks.findIndex((task) => task.name === stage);
 
-    // console.log("G Stage Indices with Task and Index:", stageIndex);
+    console.log("Project Index and Stage:", projectIndex, stage);
 
     if (stage.startsWith("G") && projectIndex !== -1) {
       const prevStage = stages[stageIndex - 1];
@@ -401,7 +401,9 @@ export const createGanttTasks = (
         let a0g1ExpectedDate = new Date(stageDates["A0-G1"].end);
 
         expectedDelay = calculateDelayedDuration(a0g1ExpectedDate);
-        console.log("Prev Stage End", expectedDelay);
+        console.log("Prev Stage End", prevStage, expectedDelay, projectIndex);
+        ganttTasks[0].delayedDuration = expectedDelay;
+
         // Find the index of the current stage in gStageIndices
         const gStageIndex = gStageIndices.find(
           (index) => templateTasks[index].Name === stage
@@ -461,7 +463,7 @@ export const createGanttTasks = (
 
         ganttTasks[projectIndex].projectStatus =
           prevStageStatus === "In Progress" || nextStageStatus === "In Progress"
-            ? "In Progress"
+            ? "Yet to start"
             : prevStageStatus === "Completed" && nextStageStatus === "Completed"
             ? "Completed"
             : "Yet to start";

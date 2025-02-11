@@ -15,6 +15,8 @@ const CustomTooltip = ({ task, fontSize, fontFamily, project }) => {
     delayedDuration,
   } = task;
 
+  console.log("Task...", task);
+
   // Format dates
   const formatDate = (date) =>
     new Date(date).toLocaleDateString(undefined, {
@@ -49,12 +51,6 @@ const CustomTooltip = ({ task, fontSize, fontFamily, project }) => {
             <strong>Stage Name:</strong> {name}
           </div>
           <div>
-            <strong>Actual Start:</strong> {formatDate(start)}
-          </div>
-          <div>
-            <strong>Estimated End:</strong> {formatDate(end)}
-          </div>
-          <div>
             <strong>Project Status:</strong> {projectStatus}
           </div>
           <div>
@@ -62,6 +58,20 @@ const CustomTooltip = ({ task, fontSize, fontFamily, project }) => {
           </div>
           <div>
             <strong>Planned End Date:</strong> {formatDate(plannedEnd)}
+          </div>
+          <div>
+            <strong>
+              {projectStatus === "Yet to start"
+                ? "Estimated Start Date:"
+                : "Actual Start Date:"}
+            </strong>{" "}
+            {formatDate(start)}
+          </div>
+          {/* <div>
+            <strong>Actual Start:</strong> {formatDate(start)}
+          </div> */}
+          <div>
+            <strong>Estimated End:</strong> {formatDate(end)}
           </div>
           <div>
             <strong>Delayed Duration:</strong> {delayedDuration} days
@@ -72,6 +82,9 @@ const CustomTooltip = ({ task, fontSize, fontFamily, project }) => {
         <>
           <div>
             <strong>Task Name:</strong> {name}
+          </div>
+          <div>
+            <strong>Task Status:</strong> {status ? status : "Yet to start"}
           </div>
           {plannedFields && (
             <>
@@ -84,9 +97,7 @@ const CustomTooltip = ({ task, fontSize, fontFamily, project }) => {
               </div>
             </>
           )}
-          <div>
-            <strong>Task Status:</strong> {status ? status : "Yet to start"}
-          </div>
+
           <div>
             <strong>Planned Start Date:</strong> {formatDate(plannedStart)}
           </div>
